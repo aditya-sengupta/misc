@@ -1,24 +1,32 @@
+import tqdm
+highest = 1000000
+
+counts = [0] * highest
+counts[1] = 1
+
 def collatz(x):
-    if(x%2==0):
-        return x/2
-    return (3*x)+1
+    if x % 2 == 0:
+        return x // 2
+    return 3 * x + 1
 
-def itercount(x, L):
-    c = collatz(x)
-    if (x==1):
+def chain_length_uncached(x):
+    if x == 1:
         return 1
-    if(L[c]!=0):
-        L[x] = L[c] + 1
+    return chain_length_uncached(collatz(x)) + 1
+
+def count_chain_length(x):
+    c = collatz(x)
+    if x == 1:
+        return 1
+    if c < highest and counts[c] != 0:
+        counts[x] = counts[c] + 1
+    elif c < highest:
+        counts[x] = count_chain_length(c) + 1
     else:
-        L[x] = itercount(c, L)
-    return L[x]
+        return chain_length_uncached(c) + 1
+    return counts[x]
 
-countlist = [0] * 1000000
-countlist[1] = 1
-for i in range(1, 10):
-    cstep = 0
-    if(countlist[i]==0):#not filled in by previous iteration
-        cstep += 1
-        countlist[collatz(i)]
+for i in tqdm.trange(1, highest):
+    count_chain_length(i)
 
-print(countlist.index(max(countlist)))
+print(counts.index(max(counts)))
